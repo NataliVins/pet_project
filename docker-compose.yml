@@ -1,14 +1,57 @@
-version: '3.8'
+version: "3.9"
 
 services:
+
+  database:
+    image: postgres:12.15
+    restart: always
+    container_name: pp-db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "dnduser"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   backend:
-    hostname: backend
-    container_name: backend
-    restart: on-failure
+    restart: always
     build:
-      context: ./backend
+      context: backend/
+    container_name: pp-server
     ports:
       - "8000:8000"
+    links:
+      - database
+    depends_on:
+      - database
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail http://localhost:8000 || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     volumes:
-      - ./backend:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
+      - ./backend/:/app
+    command: bash -c "uvicorn main:app --reload --host 0.0.0.0 --port 8000"
+
+
+  frontend:
+    restart: always
+    build:
+      context: frontend/
+    container_name: pp-client
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    volumes:
+      - ./frontend/:/app
+
+volumes:
+  postgres_data:
