@@ -22,11 +22,5 @@ WORKDIR /app/my-app
 # compiling the React application into static files
 RUN npm run build
 
-# set up a simple web server to serve static files
-RUN npm install -g serve
-
-# set the command to start the web server when the container starts
-CMD ["serve", "-s", "build", "-l", "4000"]
-
 # open port for web-server
 EXPOSE 4000

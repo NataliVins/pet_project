@@ -51,7 +51,8 @@ services:
     env_file:
       - .env
     volumes:
-      - ./frontend/:/app
+      - ./frontend/src:/app/my-app/src
+    command: ash -c "PORT=4000 npm start"
 
 volumes:
   postgres_data:
